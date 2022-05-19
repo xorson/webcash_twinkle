@@ -12,6 +12,8 @@ Webcash twinkle allows 2 parties to trade sats for webcash by communicating and 
 The script will ask both parties for the amounts and # of trade lots, and start to automatically swap. 
 Sellers need to ensure they have enough wallet balance and buyers need to ensure they have enough local channel capacity to send sats.
 
+<b>The webcash seller settles first.</b>
+
 The python script uses gRPC for communication with the Lightning Network Daemon.
 
 ## Disclaimer
