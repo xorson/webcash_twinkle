@@ -52,7 +52,7 @@ def send_msg(msg): #
 def rcv_msg(): #ln msg sender
     request = lnrpc.SubscribeCustomMessagesRequest()
     try:
-        for response in lnstub.SubscribeCustomMessages(request, timeout=1):
+        for response in lnstub.SubscribeCustomMessages(request, timeout=3):
                 if (response.type == int("41414")):
                     return response.data.decode('UTF-8')
                     break
@@ -116,16 +116,18 @@ def buy_side():
         keySendPreimageType: preimage,
 		messageType: "swap sucessful".encode()
         }
-
         wc_rcv = rcv_msg() #receive webcash
+        while (not wc_rcv.startswith("e")):
+            wc_rcv = rcv_msg()
+
         insert(wc_rcv,"trade") #check webcash validity
         if ((int) (wc_rcv[1:str.find(wc_rcv,":")]) != sell_chunk): #ensure as per agreed amount
             print(Fore.RED, "The other party might be cheating... terminating")
             exit() 
         else: #reciprocate with sats
+            send_msg("ACK")
             request = routerrpc.SendPaymentRequest(dest=send_pubkey,amt=buy_chunk,fee_limit_sat=0, timeout_seconds=5,payment_hash=preimage_hash,dest_custom_records=dest_custom_records)
             print("Sending sats: ",buy_chunk)
-            time.sleep(2)
             for response in rostub.SendPaymentV2(request):
                 print(".", end='', flush=True)
                 if (response.status == 3):
@@ -145,9 +147,11 @@ def sell_side():
     
     for i in range(num_txs):
         tmp_cash = pay(sell_chunk,"trade") #generate webcash installement
-        send_msg(tmp_cash) #send it over to peer
-        time.sleep(2)
 
+        send_msg(tmp_cash) #send it over to peer
+        while (rcv_msg() != "ACK"):
+            print(".",end='',flush=True)           
+            continue
         request = lnrpc.InvoiceSubscription()
         print("Receiving sats ") 
         for response in lnstub.SubscribeInvoices(request): #wait for sats payment... this part needs to terminate in case invoice never seen
@@ -182,17 +186,17 @@ while (True):
 
 
 msg = get_trade()
-print("Sending trade details")
+print("Establishing connection")
+
 i=0
 trade_msg=""
 while (True):
     send_msg(msg)
     trade_msg=rcv_msg()
-    if (trade_msg and trade_msg != "ACK"):
+    if (trade_msg):
         send_msg(msg)
-        send_msg("ACK")
         break
-    if (i>60):
+    if (i>20):
         print("\nDidn't receive a response from the other party\nTerminating")
         exit()
     i+=1
@@ -217,7 +221,8 @@ if (side == "S"):
     if (start_wallet_balance < webcash_amount):
         print(Fore.RED, "\nERROR: Not enough webcash to cary out transaction")
         exit()
-    sell_side() 
+    else:
+        sell_side() 
 else:
     if (start_chan_balance < sats_amount):
         print(Fore.RED, "\nERROR: Your channel does not have enough local capacity")
