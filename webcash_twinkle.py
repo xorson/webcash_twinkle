@@ -1,4 +1,4 @@
-#webcash twinkle -- enables sats-for-webcash exchange between 2 parties in a way to minimise trust by breaking down the trade to installements
+#webcash twinkle -- enables sats-for-webcash exchange between 2 parties in a trust minimised way by breaking down the trade into piecemeals
 #uses modified libraries from https://github.com/kanzure/webcash for webcash wallet operations. 
 #workflow designed so that Webcash seller settles first, buyer settles second
 
@@ -51,10 +51,13 @@ def send_msg(msg): #
 
 def rcv_msg(): #ln msg sender
     request = lnrpc.SubscribeCustomMessagesRequest()
-    for response in lnstub.SubscribeCustomMessages(request):
-        if (response.type == int("41414")):
-            return response.data.decode('UTF-8')
-            break
+    try:
+        for response in lnstub.SubscribeCustomMessages(request, timeout=1):
+                if (response.type == int("41414")):
+                    return response.data.decode('UTF-8')
+                    break
+    except:
+        print('.',end='',flush=True)
 
 def confirm_trade(trade_msg): #checks both parties have same understanding of trade parameters
     rcv_side,rcv_webcash,rcv_sats,rcv_txs = trade_msg.split(';',4)
@@ -168,7 +171,6 @@ if __name__ == "__main__":
 
 print(Fore.LIGHTBLUE_EX, bytearray.fromhex(logo).decode())
 print(Fore.LIGHTWHITE_EX, "\nWelcome to webcash twinkle ... Let's begin\n")
-print("If you are the webcash seller, please standby until the buyer tells you to proceed\n")
 
 while (True):
     send_pubkey=input("Enter destination PUBKEY --> ")
@@ -180,16 +182,23 @@ while (True):
 
 
 msg = get_trade()
-
-##This portion needs to be re-written, as currently buyer must start and wait for the seller
-
-if (side == "B"):
-    print('\nWaiting on seller, you can tell them to proceed now.\n')
-    trade_msg = rcv_msg()
+print("Sending trade details")
+i=0
+trade_msg=""
+while (True):
     send_msg(msg)
-else:
-    send_msg(msg)
-    trade_msg = rcv_msg()
+    trade_msg=rcv_msg()
+    if (trade_msg and trade_msg != "ACK"):
+        send_msg(msg)
+        send_msg("ACK")
+        break
+    if (i>60):
+        print("\nDidn't receive a response from the other party\nTerminating")
+        exit()
+    i+=1
+
+print("\nReceived trade details, cross-checking")
+
 
 if (not (confirm_trade(trade_msg))):
     exit()    
