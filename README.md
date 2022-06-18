@@ -22,8 +22,8 @@ Review the code and use at your sole risk. Webcash <a href="https:///webcash.org
 
 ## Installation
 
-1. Ensure you have lnd installed with key-send capability (set in ~/.lnd/lnd.conf) by adding (accept-keysend=true).
-2. In case you don't have a full bitcoin node backend, you can still run lnd in neutrino mode, which requires minimal diskspace. Set the --bitcoin.node flag to neutrino, point the --neutrino.addpeer flag to faucet.lightning.community and grab the fees from https://nodes.lightning.computer/fees/v1/btc-fee-estimates.json using the --fee-url flag. 
+1. Ensure you have lnd installed with key-send capability (set in ~/.lnd/lnd.conf) by adding `accept-keysend=true`.
+2. In case you don't have a full bitcoin node backend, you can still run lnd in neutrino mode, which requires minimal diskspace. Set the `--bitcoin.node` flag to neutrino, point the `--neutrino.addpeer` flag to faucet.lightning.community and grab the fees from https://nodes.lightning.computer/fees/v1/btc-fee-estimates.json using the `--fee-url` flag. 
 3. Compile and install the gRPC dependencies (googleapis), lnd lightning.proto,and RPC modules for subservers. Visit the <a href="https://github.com/lightningnetwork/lnd/blob/master/docs/grpc/python.md"> official repository</a> for detailed installation instructions. 
 4. Download the customised webcash library and keep it in your webcash twinkle folder. 
 
@@ -42,7 +42,7 @@ It's recommended prior to starting the script to see if you can push 1 sat accro
 
 ## Bugs
 
-At the moment, the buyer needs to run the script first and wait for the prompt to inform the seller to run their script.
+~~At the moment, the buyer needs to run the script first and wait for the prompt to inform the seller to run their script.~~ Fixed
 
 
 ## License
