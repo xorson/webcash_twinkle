@@ -23,8 +23,15 @@ Review the code and use at your sole risk. Webcash <a href="https:///webcash.org
 ## Installation
 
 1. Ensure you have lnd installed with key-send capability (set in ~/.lnd/lnd.conf) by adding `accept-keysend=true`.
-2. In case you don't have a full bitcoin node backend, you can still run lnd in neutrino mode, which requires minimal diskspace. Set the `--bitcoin.node` flag to neutrino, point the `--neutrino.addpeer` flag to faucet.lightning.community and grab the fees from https://nodes.lightning.computer/fees/v1/btc-fee-estimates.json using the `--fee-url` flag. 
-3. Compile and install the gRPC dependencies (googleapis), lnd lightning.proto,and RPC modules for subservers. Visit the <a href="https://github.com/lightningnetwork/lnd/blob/master/docs/grpc/python.md"> official repository</a> for detailed installation instructions. 
+
+2. In case you don't have a full bitcoin node backend, you can still run lnd in neutrino mode, which requires minimal diskspace. Set the `--bitcoin.node` flag to `neutrino`, point the `--neutrino.addpeer` flag to `faucet.lightning.community` and grab the fees from https://nodes.lightning.computer/fees/v1/btc-fee-estimates.json using the `--fee-url` flag. 
+
+    For example: <pre>lnd --bitcoin.active --bitcoin.mainnet --bitcoin.node=neutrino --neutrino.addpeer=faucet.lightning.community --feeurl https://nodes.lightning.computer/fees/v1/btc-fee-estimates.json</pre> 
+
+3. Compile and install the gRPC dependencies (googleapis): lnd lightning.proto and RPC modules for subservers. These are 4 files called _lightning_pb2_grpc.py,  lightning_pb2.py, router_pb2_grpc.py,  router_pb2.py._
+
+    These dependencies allow us to use lnd via python, keep them in the same working directory. Visit the <a href="https://github.com/lightningnetwork/lnd/blob/master/docs/grpc/python.md"> official repository</a> for detailed instructions on how to generate them. 
+
 4. Download the customised webcash library and keep it in your webcash twinkle folder. 
 
 <b>Please note: The official webcash library will not work as its intended to be run from the cli.</b>
@@ -34,16 +41,18 @@ The modified webcash library makes small changes to pass status and token secret
 ## Usage 
 
 1. The buyer opens a lightning channel with the seller using lncli with the necessary capacity (remember to enable keysend)
+
 2. The webcash seller loads a local webcash wallet
+
 3. Both parties enter the corresponding side's pubkey and their desired trade parameters
-4. webcash twinkle will x-check to ensure both parties are 100% in agreement, and then start to piecemeal the transaction. Errors or cheating attempts will cause the script to terminate
+
+4. webcash twinkle will cross-check to ensure both parties are 100% in agreement, and then start to piecemeal the transaction. Errors or cheating attempts will cause the script to terminate
 
 It's recommended prior to starting the script to see if you can push 1 sat accross the channel using lncli --keysend. This will help ensure your setup is good and aid any troubleshooting.
 
 ## Bugs
 
-~~At the moment, the buyer needs to run the script first and wait for the prompt to inform the seller to run their script.~~ Fixed
-
+Please report any.
 
 ## License
 
